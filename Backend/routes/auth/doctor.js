@@ -3,6 +3,10 @@ import { authenticateToken } from "../../middleware/tokenAuthenticator.js";
 import { allowRoles } from "../../middleware/allowedRoles.js";
 import { authLimiter } from "../../middleware/authLimiter.js";
 import Joi from "joi";
+import dotenv from "dotenv";
+dotenv.config();
+
+const JWT_SECRET = process.env.JWT_SECRET || "example";
 
 const LoginSchema = Joi.object({
   username: Joi.string().alphanum().min(3).max(30).required(),
@@ -11,7 +15,7 @@ const LoginSchema = Joi.object({
 
 const router = Router();
 
-router.get("/login", authenticateToken, allowRoles("doctor"), (req, res) => {
+router.get("/login", authLimiter, allowRoles("doctor"), (req, res) => {
   const { error } = LoginSchema.validate(req.body);
   if (error) return res.status(400).json({ message: error.details[0].message });
   /* login a doctor */
