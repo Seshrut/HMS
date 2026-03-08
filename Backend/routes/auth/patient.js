@@ -15,16 +15,25 @@ const LoginSchema = Joi.object({
 
 const router = Router();
 
-router.get("/login", authLimiter, allowRoles("patient"), (req, res) => {
+router.post("/login", authLimiter, (req, res) => {
   const { error } = LoginSchema.validate(req.body);
   if (error) return res.status(400).json({ message: error.details[0].message });
   /* login a patient */
+  return res.status(501).json({
+    message: "Login logic not implemented yet"
+  });
 });
 
-router.get("/register", authLimiter, (req, res) => {
+router.post("/register", authLimiter, (req, res) => {
   const { error } = LoginSchema.validate(req.body);
   if (error) return res.status(400).json({ message: error.details[0].message });
-  /* register a patient */
+
+  //uncomment this if u want to test if our post is working, use postman on this link: http://localhost:3000/api/patients/register
+  //with some json content ex: 
+
+  return res.status(501).json({
+    message: "register logic not implemented yet"
+  });
 });
 
 export default router;
