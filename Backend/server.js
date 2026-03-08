@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 
 const app = express();
+app.use(express.json());
+
 const PORT = process.env.PORT || 3000;
 
 app.set("trust proxy", 1);
@@ -41,6 +43,17 @@ app.use("/api/dashboard", dashboardRoutes);
 //Whoami routes
 import whoamiRoutes from "./routes/whoami.js";
 app.use("/api/whoami", whoamiRoutes);
+
+import pool from "./config/db.js";
+
+app.get("/dbtest", async (req,res)=>{
+  try{
+    const result = await pool.query("SELECT NOW()");
+    res.json(result.rows);
+  }catch(err){
+    res.status(500).json({error:err.message});
+  }
+});
 
 //Start Server
 app.listen(PORT, () => {
