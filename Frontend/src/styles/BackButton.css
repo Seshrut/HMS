@@ -1,0 +1,38 @@
+.back-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+
+    width: 48px;
+    height: 48px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 50%;
+    background: #2563eb;
+    /* stronger blue */
+    color: #ffffff;
+
+    cursor: pointer;
+
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+    transition: all 0.2s ease;
+}
+
+.back-icon {
+    font-size: 22px;
+    line-height: 1;
+    /* prevents vertical misalignment */
+}
+
+.back-btn:hover {
+    background: #1e4fd1;
+    transform: scale(1.08);
+}
+
+.back-btn:active {
+    transform: scale(0.95);
+}

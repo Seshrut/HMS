@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom"
 import patientImg from "../assets/patient.png"
 import doctorImg from "../assets/doctor.png"
+import BackButton from "../components/BackButton"
 
 export default function LoginSelector() {
 
@@ -9,7 +10,7 @@ export default function LoginSelector() {
     return (
 
         <div className="login-selector-container">
-
+            <BackButton to="/" />
             <h1>Select Role</h1>
 
             <div className="role-box">
