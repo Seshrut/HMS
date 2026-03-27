@@ -4,9 +4,9 @@ function Navbar() {
       <h2>HMS</h2>
 
       <div className="nav-links">
-        <a href="/">Home</a>
-        <a href="#">About</a>
-        <a href="/login">Contact Us</a>
+        <a href="/" className="nav-link">Home</a>
+        <a href="#" className="nav-link">About</a>
+        <a href="/login" className="nav-link">Contact Us</a>
       </div>
     </div>
   )

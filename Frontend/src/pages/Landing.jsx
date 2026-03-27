@@ -2,39 +2,39 @@ import Navbar from "../components/Navbar"
 import { useNavigate } from "react-router-dom"
 import hospital from "../assets/hospital.jpg"
 
-export default function Landing(){
+export default function Landing() {
 
-const navigate = useNavigate()    
+    const navigate = useNavigate()
 
-return(
+    return (
 
-<div>
+        <div>
 
-<Navbar/>
+            <Navbar />
 
-<div className="hero">
+            <div className="hero">
 
-<div>
+                <div>
 
-<h1>Your Health, Our Priority</h1>
-<h2>Welcome to MedCare Hospital</h2>
+                    <h1>Your Health, Our Priority</h1>
+                    <h2>Welcome to MedCare Hospital</h2>
 
-<p>
-Manage appointments, doctors, and patient records efficiently with our modern healthcare platform.
-</p>
+                    <p>
+                        Manage appointments, doctors, and patient records efficiently with our modern healthcare platform.
+                    </p>
 
-<a href="/login">
-<button className="btn">Get Started</button>
-</a>
+                    <a href="/login">
+                        <button className="btn">Get Started</button>
+                    </a>
 
-</div>
+                </div>
 
-<img src={hospital} />
+                <img src={hospital} />
 
-</div>
+            </div>
 
-</div>
+        </div>
 
-)
+    )
 
 }
