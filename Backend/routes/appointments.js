@@ -9,7 +9,7 @@ const router = Router();
 Create a new appointment
 Only patients should be able to book appointments
 */
-router.post("/", authenticateToken, allowRoles( "patient"), async (req, res) => {
+router.post("/", authenticateToken, allowRoles("patient"), async (req, res) => {
   try {
     const patientId = req.userId;
     const { doctorId, appointmentDate } = req.body;
@@ -18,7 +18,7 @@ router.post("/", authenticateToken, allowRoles( "patient"), async (req, res) => 
       `INSERT INTO appointments (patient_id, doctor_id, appointment_date)
        VALUES ($1,$2,$3)
        RETURNING *`,
-      [patientId, doctorId, appointmentDate]
+      [patientId, doctorId, appointmentDate],
     );
 
     res.status(201).json({
@@ -45,14 +45,14 @@ router.get(
         `SELECT * FROM appointments
          WHERE patient_id = $1
          ORDER BY appointment_date DESC`,
-        [patientId]
+        [patientId],
       );
 
       res.json(result.rows);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
-  }
+  },
 );
 
 /*
@@ -70,14 +70,14 @@ router.get(
         `SELECT * FROM appointments
          WHERE doctor_id = $1
          ORDER BY appointment_date DESC`,
-        [doctorId]
+        [doctorId],
       );
 
       res.json(result.rows);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
-  }
+  },
 );
 
 /*
@@ -98,7 +98,7 @@ router.put(
          SET status = $1
          WHERE id = $2
          RETURNING *`,
-        [status, appointmentId]
+        [status, appointmentId],
       );
 
       res.json({
@@ -108,7 +108,7 @@ router.put(
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
-  }
+  },
 );
 
 export default router;
