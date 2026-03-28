@@ -11,7 +11,7 @@ Only patients should be able to book appointments
 */
 router.post("/", authenticateToken, allowRoles("patient"), async (req, res) => {
   try {
-    const patientId = req.userId;
+    const patientId = req.username;
     const { doctorId, appointmentDate } = req.body;
 
     const result = await pool.query(
@@ -39,7 +39,7 @@ router.get(
   allowRoles("patient"),
   async (req, res) => {
     try {
-      const patientId = req.userId;
+      const patientId = req.username;
 
       const result = await pool.query(
         `SELECT * FROM appointments
@@ -64,7 +64,7 @@ router.get(
   allowRoles("doctor"),
   async (req, res) => {
     try {
-      const doctorId = req.userId;
+      const doctorId = req.username;
 
       const result = await pool.query(
         `SELECT * FROM appointments
