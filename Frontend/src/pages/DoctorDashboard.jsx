@@ -35,7 +35,7 @@ export default function DoctorDashboard() {
         if (res.role != "doctor") navigate("/loginselector");
         setUsername(res.username);
       })
-      .catch(navigate("/loginselector"));
+      .catch(() => navigate("/loginselector"));
   }
   function getStats() {
     fetch("http://localhost:3000/api/dashboard/doctor", {
