@@ -35,6 +35,7 @@ export default function Login() {
                 }
             })
             .catch(e => console.error(e));
+        navigate(`/${role}-dashboard`);
     }
 
     return (
