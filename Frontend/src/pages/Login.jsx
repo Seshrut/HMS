@@ -3,6 +3,7 @@ import { Link } from "react-router-dom"
 import { useParams } from "react-router-dom"
 import { useNavigate } from "react-router-dom"
 import "../styles/login.css"
+import Cookies from 'js-cookie'
 import BackButton from "../components/BackButton"
 
 export default function Login() {
@@ -14,7 +15,6 @@ export default function Login() {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        // navigate(`/${role}-dashboard`);
         fetch(`http://localhost:3000/api/${role}/login`, {
             method: "POST",
             headers: {
@@ -28,7 +28,11 @@ export default function Login() {
             .then(res => res.json())
             .then((res) => {
                 if (res.message) console.log(res.message);
-                if (res.token) console.log(res.token);
+                if (res.token) {
+                    console.log(res.token);
+                    Cookies.set("token", res.token);
+                    navigate(`/${role}-dashboard`);
+                }
             })
             .catch(e => console.error(e));
     }
