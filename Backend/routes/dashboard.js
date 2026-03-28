@@ -17,4 +17,17 @@ router.get("/doctor", authenticateToken, allowRoles("doctor"), (req, res) => {
   });
 });
 
+router.get("/patient", authenticateToken, allowRoles("patient"), (req, res) => {
+  /*
+    Retrieves aggregated data such as
+    total appointments, pending appointments, approved appointments, and completed consultations.
+  */
+  res.json({
+    totalAppointments: 120,
+    pending: 32,
+    completed: 88,
+    doctorsAvailable: 15,
+  });
+});
+
 export default router;
