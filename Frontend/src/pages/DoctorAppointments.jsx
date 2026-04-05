@@ -15,7 +15,7 @@ export default function DoctorAppointments() {
     setCookie(storedCookie);
     validateUser();
     getAppointments();
-  })
+  }, [])
 
   function validateUser() {
     if (cookie == "") return;
