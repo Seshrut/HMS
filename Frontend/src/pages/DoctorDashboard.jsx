@@ -102,19 +102,19 @@ export default function DoctorDashboard() {
           <div className="dashboard-section-card">
             <h3 className="section-card-title">Quick Actions</h3>
             <div className="quick-action-grid">
-              <button className="quick-action-btn" onClick={() => navigate("/doctor/appointments")}>
+              <button className="quick-action-btn" onClick={() => navigate("/doctor-appointments")}>
                 <span className="qa-icon">📅</span>
                 <span className="qa-label">My Appointments</span>
               </button>
-              <button className="quick-action-btn" onClick={() => navigate("/doctor/patients")}>
+              <button className="quick-action-btn" onClick={() => navigate("/doctor-patients")}>
                 <span className="qa-icon">👨‍⚕️</span>
                 <span className="qa-label">My Patients</span>
               </button>
-              <button className="quick-action-btn" onClick={() => navigate("/doctor/write-prescription")}>
+              <button className="quick-action-btn" onClick={() => navigate("/write-prescription")}>
                 <span className="qa-icon">📝</span>
                 <span className="qa-label">Write Prescription</span>
               </button>
-              <button className="quick-action-btn" onClick={() => navigate("/doctor/reports")}>
+              <button className="quick-action-btn" onClick={() => navigate("/doctor-reports")}>
                 <span className="qa-icon">📄</span>
                 <span className="qa-label">View Reports</span>
               </button>
