@@ -19,7 +19,7 @@ export default function DoctorDashboard() {
     setCookie(storedCookie);
     validateUser();
     getStats();
-  })
+  }, [])
 
   function validateUser() {
     if (cookie == "") return;
