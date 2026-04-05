@@ -5,39 +5,34 @@ import { useNavigate } from "react-router-dom"
 
 export default function DoctorPatients() {
   const navigate = useNavigate();
-  const [cookie, setCookie] = useState("");
   const [search, setSearch] = useState("");
 
   useEffect(() => {
     var storedCookie = Cookies.get("token")
     if (!storedCookie) { navigate("/loginselector") }
-    setCookie(storedCookie);
-    validateUser();
-  })
+    else validateUser(storedCookie);
+  }, [])
 
-  function validateUser() {
-    if (cookie == "") return;
+  function validateUser(token) {
     fetch("http://localhost:3000/api/whoami", {
       method: "GET",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${cookie}` }
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
       .then(res => { if (res.role != "doctor") navigate("/loginselector"); })
       .catch(() => navigate("/loginselector"));
   }
 
-  // Static patient list - replace with API call when backend is ready
   const patients = [
     { id: 1, name: "Rahul Sharma",  age: 34, gender: "Male",   lastVisit: "07 Apr 2026", condition: "General Checkup" },
     { id: 2, name: "Sneha Kapoor",  age: 28, gender: "Female", lastVisit: "07 Apr 2026", condition: "Consultation" },
     { id: 3, name: "Mohan Rao",     age: 52, gender: "Male",   lastVisit: "06 Apr 2026", condition: "Cardiology" },
     { id: 4, name: "Ananya Singh",  age: 20, gender: "Female", lastVisit: "01 Apr 2026", condition: "ENT" },
     { id: 5, name: "Vikram Patel",  age: 45, gender: "Male",   lastVisit: "29 Mar 2026", condition: "Orthopedic" },
+    { id: 6, name: "Deepa Nair",    age: 38, gender: "Female", lastVisit: "28 Mar 2026", condition: "Radiology" },
   ]
 
-  const filtered = patients.filter(p =>
-    p.name.toLowerCase().includes(search.toLowerCase())
-  )
+  const filtered = patients.filter(p => p.name.toLowerCase().includes(search.toLowerCase()))
 
   return (
     <div className="dashboard-layout">
@@ -51,31 +46,19 @@ export default function DoctorPatients() {
           </div>
         </div>
 
-        {/* Search Bar */}
-        <div style={{ marginBottom: "8px" }}>
-          <input
-            type="text"
-            placeholder="🔍  Search patient by name..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            style={{
-              width: "100%", maxWidth: "380px", padding: "10px 16px",
-              borderRadius: "10px", border: "1px solid #d1d5db",
-              fontSize: "14px", outline: "none", background: "#fff"
-            }}
-          />
-        </div>
+        <input
+          type="text"
+          placeholder="🔍  Search patient by name..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ width: "100%", maxWidth: "380px", padding: "10px 16px", borderRadius: "10px", border: "1px solid #d1d5db", fontSize: "14px", outline: "none", background: "#fff", marginBottom: "8px" }}
+        />
 
-        {/* Patient Cards Grid */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "16px" }}>
           {filtered.map(p => (
             <div key={p.id} className="dashboard-section-card" style={{ padding: "20px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "14px" }}>
-                <div style={{
-                  width: "46px", height: "46px", borderRadius: "50%",
-                  background: "#dde3f5", display: "flex", alignItems: "center",
-                  justifyContent: "center", fontSize: "20px", flexShrink: 0
-                }}>
+                <div style={{ width: "46px", height: "46px", borderRadius: "50%", background: "#dde3f5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", flexShrink: 0 }}>
                   {p.gender === "Female" ? "👩" : "👨"}
                 </div>
                 <div>
