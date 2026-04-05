@@ -1,5 +1,9 @@
 import { Routes, Route } from "react-router-dom"
 
+import DoctorAppointments from "./pages/DoctorAppointments";
+import DoctorPatients from "./pages/DoctorPatients";
+import WritePrescription from "./pages/WritePrescription";
+import DoctorReports from "./pages/DoctorReports";
 import Landing from "./pages/Landing"
 import LoginSelector from "./pages/LoginSelector"
 import PatientDashboard from "./pages/PatientDashboard"
@@ -17,6 +21,10 @@ function App() {
             <Route path="/loginselector" element={<LoginSelector />} />
             <Route path="/patient-dashboard" element={<PatientDashboard />} />
             <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
+            <Route path="/doctor-appointments" element={<DoctorAppointments />} />
+            <Route path="/doctor-patients" element={<DoctorPatients />} />
+            <Route path="/write-prescription" element={<WritePrescription />} />
+            <Route path="/doctor-reports" element={<DoctorReports />} />
             <Route path="/login/:userType" element={<Login />} />
             <Route path="/register/:userType" element={<Register />} />
         </Routes>
