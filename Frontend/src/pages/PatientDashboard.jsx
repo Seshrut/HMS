@@ -13,7 +13,7 @@ export default function PatientDashboard() {
   const [doctorsAvailable, setDoctorsAvailable] = useState("--");
   const [cookie, setCookie] = useState("");
   const [username, setUsername] = useState("")
-  useEffect(() => {
+  useEffect(()=>() => {
     var storedCookie = Cookies.get("token")
     if (!storedCookie) { navigate("/loginselector") }
     setCookie(storedCookie);

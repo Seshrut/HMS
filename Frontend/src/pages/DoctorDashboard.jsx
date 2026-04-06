@@ -1,10 +1,8 @@
 import Sidebar from "../components/Sidebar"
-import { useState } from "react"
-import { useEffect } from "react";
+import { useState, useEffect } from "react"
 import Cookies from "js-cookie"
 import { useNavigate } from "react-router-dom"
-
-import AppointmentItem from "../components/AppointmentItem";
+import AppointmentItem from "../components/Appointment"
 
 export default function DoctorDashboard() {
   const navigate = useNavigate();
@@ -14,10 +12,11 @@ export default function DoctorDashboard() {
   const [PendingReports, setPendingReports] = useState("--");
   const [cookie, setCookie] = useState("");
   const [username, setUsername] = useState("")
-  useEffect(() => {
+
+  useEffect(()=>() => {
     var storedCookie = Cookies.get("token")
-    if (!storedCookie) { navigate("/loginselector") }
     setCookie(storedCookie);
+    if (!storedCookie) { navigate("/loginselector") }
     validateUser();
     getStats();
   })
@@ -38,13 +37,13 @@ export default function DoctorDashboard() {
       })
       .catch(() => navigate("/loginselector"));
   }
+
   function getStats() {
     fetch("http://localhost:3000/api/dashboard/doctor", {
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${cookie}`,
-      }
+      headers: { Authorization: `Bearer ${cookie}` }
     })
+    .then(res=>{console.log(res);return res})
       .then(res => res.json())
       .then((res) => {
         setTodayAppointments(res.todayAppointments);
@@ -55,10 +54,7 @@ export default function DoctorDashboard() {
   }
 
   const today = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
+    weekday: "long", year: "numeric", month: "long", day: "numeric",
   })
 
 
@@ -83,10 +79,8 @@ export default function DoctorDashboard() {
   return (
     <div className="dashboard-layout">
       <Sidebar />
-
       <main className="dashboard-main">
 
-        {/* Top Bar */}
         <div className="dashboard-topbar">
           <div>
             <p className="dashboard-greeting">Welcome {username} 👨‍⚕️</p>
@@ -95,33 +89,27 @@ export default function DoctorDashboard() {
           <span className="dashboard-date">📅 {today}</span>
         </div>
 
-        {/* Doctor Stats */}
         <div className="stats-grid">
-
           <div className="stat-card blue">
             <div className="stat-card-icon">📅</div>
             <div className="stat-card-value">{todayAppointments}</div>
             <div className="stat-card-label">Today's Appointments</div>
           </div>
-
           <div className="stat-card green">
             <div className="stat-card-icon">👨‍⚕️</div>
             <div className="stat-card-value">{patients}</div>
             <div className="stat-card-label">Total Patients</div>
           </div>
-
           <div className="stat-card purple">
             <div className="stat-card-icon">💊</div>
             <div className="stat-card-value">{Prescriptions}</div>
             <div className="stat-card-label">Prescriptions</div>
           </div>
-
           <div className="stat-card yellow">
             <div className="stat-card-icon">📄</div>
             <div className="stat-card-value">{PendingReports}</div>
             <div className="stat-card-label">Reports Pending</div>
           </div>
-
         </div>
 
 

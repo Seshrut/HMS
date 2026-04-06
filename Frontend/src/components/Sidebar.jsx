@@ -3,32 +3,31 @@ import { Link } from "react-router-dom"
 export default function Sidebar() {
   return (
     <div className="sidebar">
-      {/* Header */}
+
       <div className="sidebar-header">
         <div className="sidebar-brand">🏥 MedCare HMS</div>
-        <span className="sidebar-role-tag">Patient Portal</span>
+        <span className="sidebar-role-tag">Doctor Portal</span>
       </div>
 
-      {/* Navigation */}
       <nav className="sidebar-nav">
         <div className="sidebar-section-label">Main Menu</div>
 
-        <Link to="/dashboard" className="sidebar-item active">
+        <Link to="/doctor-dashboard" className="sidebar-item">
           <span className="sidebar-item-icon">📊</span>
           Dashboard
         </Link>
 
-        <Link to="#" className="sidebar-item">
+        <Link to="/doctor-appointments" className="sidebar-item">
           <span className="sidebar-item-icon">📅</span>
           Appointments
         </Link>
 
-        <Link to="#" className="sidebar-item">
+        <Link to="/doctor-patients" className="sidebar-item">
           <span className="sidebar-item-icon">👨‍⚕️</span>
-          My Doctors
+          My Patients
         </Link>
 
-        <Link to="#" className="sidebar-item">
+        <Link to="/write-prescription" className="sidebar-item">
           <span className="sidebar-item-icon">💊</span>
           Prescriptions
         </Link>
@@ -47,12 +46,11 @@ export default function Sidebar() {
 
       </nav>
 
-      {/* Footer */}
       <div className="sidebar-footer">
         <div className="sidebar-user">
-          <div className="sidebar-avatar">P</div>
+          <div className="sidebar-avatar">D</div>
           <div>
-            <div className="sidebar-user-name">Patient</div>
+            <div className="sidebar-user-name">Doctor</div>
             <div className="sidebar-user-status">Active Session</div>
           </div>
         </div>
