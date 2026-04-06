@@ -15,11 +15,11 @@ export default function DoctorDashboard() {
 
   useEffect(() => {
     var storedCookie = Cookies.get("token")
-    if (!storedCookie) { navigate("/loginselector") }
     setCookie(storedCookie);
+    if (!storedCookie) { navigate("/loginselector") }
     validateUser();
     getStats();
-  }, [])
+  })
 
   function validateUser() {
     if (cookie == "") return;
@@ -43,6 +43,7 @@ export default function DoctorDashboard() {
       method: "GET",
       headers: { Authorization: `Bearer ${cookie}` }
     })
+    .then(res=>{console.log(res);return res})
       .then(res => res.json())
       .then((res) => {
         setTodayAppointments(res.todayAppointments);
