@@ -316,3 +316,121 @@ body {
     display: block;
     margin: 10px 0;
 }
+
+/* ===== LOGIN PAGE ===== */
+
+.login-page{
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(135deg,#e0e7ff,#f0f4ff);
+}
+
+.login-card{
+  display:flex;
+  width:750px;
+  height:420px;
+  background:white;
+  border-radius:20px;
+  overflow:hidden;
+  box-shadow:0 10px 30px rgba(0,0,0,0.15);
+}
+
+.login-left{
+  flex:1;
+  padding:40px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+
+.login-left h2{
+  margin-bottom:5px;
+}
+
+.login-left p{
+  color:#666;
+  margin-bottom:20px;
+}
+
+.input-field{
+  padding:12px;
+  margin:10px 0;
+  border-radius:8px;
+  border:1px solid #ccc;
+  width:100%;
+}
+
+.login-right{
+  flex:1;
+  background-size:cover;
+  background-position:center;
+
+  /* Smooth curve */
+  border-top-left-radius:120px;
+  border-bottom-left-radius:120px;
+
+  /* Add slight overlay effect */
+  position:relative;
+  overflow:hidden;
+}
+
+.login-right::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+
+  background:linear-gradient(
+    to left,
+    rgba(255,255,255,0) 40%,
+    rgba(255,255,255,0.9) 100%
+  );
+}
+
+
+.appointment-container {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+  align-items: center;
+}
+
+.appointment-form h2 {
+  margin-bottom: 5px;
+}
+
+.appointment-form p {
+  color: #6b7280;
+  margin-bottom: 20px;
+}
+
+.appointment-visual {
+  background: #2563eb;
+  color: white;
+  padding: 30px;
+  border-radius: 15px;
+}
+
+.appointment-visual h3 {
+  margin-bottom: 15px;
+}
+
+.appointment-visual ul {
+  list-style: none;
+  padding: 0;
+}
+
+.appointment-visual li {
+  margin-bottom: 10px;
+}
+.dashboard-section-card {
+  transition: 0.3s;
+}
+
+.dashboard-section-card:hover {
+  transform: translateY(-3px);
+}

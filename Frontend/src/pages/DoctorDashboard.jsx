@@ -57,6 +57,25 @@ export default function DoctorDashboard() {
     weekday: "long", year: "numeric", month: "long", day: "numeric",
   })
 
+
+  const appointments = [
+  {
+    name: "Rahul Sharma",
+    time: "10:00 AM — General Checkup",
+    status: "pending"
+  },
+  {
+    name: "Sneha Kapoor",
+    time: "11:30 AM — Consultation",
+    status: "completed"
+  },
+  {
+    name: "Amit Verma",
+    time: "1:00 PM — Dental",
+    status: "pending"
+  }
+];
+
   return (
     <div className="dashboard-layout">
       <Sidebar />
@@ -93,34 +112,20 @@ export default function DoctorDashboard() {
           </div>
         </div>
 
-        <div className="dashboard-lower">
-          <div className="dashboard-section-card">
-            <h3 className="section-card-title">Today's Appointments</h3>
-            <AppointmentItem name="Rahul Sharma" time="10:00 AM — General Checkup" status="pending" />
-            <AppointmentItem name="Sneha Kapoor" time="11:30 AM — Consultation" status="completed" />
-          </div>
 
-          <div className="dashboard-section-card">
-            <h3 className="section-card-title">Quick Actions</h3>
-            <div className="quick-action-grid">
-              <button className="quick-action-btn" onClick={() => navigate("/doctor-appointments")}>
-                <span className="qa-icon">📅</span>
-                <span className="qa-label">My Appointments</span>
-              </button>
-              <button className="quick-action-btn" onClick={() => navigate("/doctor-patients")}>
-                <span className="qa-icon">👨‍⚕️</span>
-                <span className="qa-label">My Patients</span>
-              </button>
-              <button className="quick-action-btn" onClick={() => navigate("/write-prescription")}>
-                <span className="qa-icon">📝</span>
-                <span className="qa-label">Write Prescription</span>
-              </button>
-              <button className="quick-action-btn" onClick={() => navigate("/doctor-reports")}>
-                <span className="qa-icon">📄</span>
-                <span className="qa-label">View Reports</span>
-              </button>
-            </div>
-          </div>
+        
+        {/* Doctor Appointment List */}
+        <div className="dashboard-section-card">
+
+          <h3 className="section-card-title">Today's Appointments</h3>
+          {appointments.map((appt, index) => (
+  <AppointmentItem
+    key={index}
+    name={appt.name}
+    time={appt.time}
+    status={appt.status}
+  />
+))}
         </div>
 
       </main>

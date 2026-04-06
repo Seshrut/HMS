@@ -3,7 +3,7 @@ import { useState } from "react"
 import { useEffect } from "react";
 import Cookies from "js-cookie"
 import { useNavigate } from "react-router-dom"
-import AppointmentItem from "../components/Appointment"
+import AppointmentItem from "../components/AppointmentItem"
 
 export default function PatientDashboard() {
   const navigate = useNavigate();
@@ -117,10 +117,12 @@ export default function PatientDashboard() {
             <h3 className="section-card-title">Quick Actions</h3>
 
             <div className="quick-action-grid">
-              <button className="quick-action-btn">
+              <button className="quick-action-btn" onClick={() => navigate("/book")}>
                 <span className="qa-icon">📅</span>
                 <span className="qa-label">Book Appointment</span>
               </button>
+
+
 
               <button className="quick-action-btn">
                 <span className="qa-icon">👨‍⚕️</span>
