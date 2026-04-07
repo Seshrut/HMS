@@ -4,6 +4,7 @@ import Joi from "joi";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import pool from "../../config/db.js";
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || "example";
@@ -22,11 +23,8 @@ router.post("/login", authLimiter, async (req, res) => {
   const username = req.body.username;
   const password = req.body.password;
   try {
-    //example user [replace with db searching]
-    const user = {
-      username: "admin",
-      password: await bcrypt.hash("adminpass", 8),
-    };
+    const result = await pool.query("SELECT * FROM patients WHERE username = $1", [username]);
+    const user = result.rows[0];
     //if user not found or password does not match hashed password(saved password)
     if (!user || !bcrypt.compareSync(password, user.password)) {
       return res.status(401).json({ message: "Invalid credentials" });
@@ -53,18 +51,19 @@ router.post("/register", authLimiter, async (req, res) => {
   const username = req.body.username;
   const password = req.body.password;
   try {
-    //example user [replace with db searching]
-    const user = {
-      username: "admin",
-      password: await bcrypt.hash("adminpass", 8),
-    };
+    const existingUser = await pool.query("SELECT * FROM patients WHERE username = $1", [username]);
 
     //if user already exists [change the if statement]
-    if (user) {
+    if (existingUser.rows.length > 0) {
       return res.status(401).json({ message: "User Already Exists" });
     }
 
     //add user to db [todo]
+    const hashedPassword = await bcrypt.hash(password, 8);
+    await pool.query(
+      "INSERT INTO patients (username, password) VALUES ($1, $2)",
+      [username, hashedPassword]
+    );
 
     //send user jwt token
     const token = jwt.sign(
@@ -75,13 +74,10 @@ router.post("/register", authLimiter, async (req, res) => {
       },
     );
 
-    res.json({ token });
-  } catch {
-    res.status(500).json({ message: "Server error" });
+    return res.json({ token });
+  } catch (err) {
+    return res.status(500).json({ message: "Server error", error: err.message });
   }
-  return res.status(501).json({
-    message: "register logic not implemented yet",
-  });
 });
 
 export default router;
