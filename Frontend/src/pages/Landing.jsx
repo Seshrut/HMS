@@ -682,7 +682,7 @@ export default function Landing() {
             <ul>
               <li><a onClick={() => navigate("/register")}>Register</a></li>
               <li><a onClick={() => navigate("/loginselector")}>Book Appointment</a></li>
-              <li><a onClick={() => navigate("/loginselector")}>Patient Dashboard</a></li>
+              <li><a onClick={() => navigate("/lpatient-dashboard")}>Patient Dashboard</a></li>
             </ul>
           </div>
           <div className="footer-col">
