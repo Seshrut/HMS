@@ -1,5 +1,5 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 // ─── SVG Icons ───────────────────────────────────────────────────────────────
 const Icon = {
@@ -70,6 +70,17 @@ export default function PatientDashboard() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  
+const [username, setUsername] = useState("Patient")
+
+useEffect(() => {
+    const token = localStorage.getItem("token")
+    if (token) {
+        // JWT has 3 parts separated by dots, the middle part is the data
+        const payload = JSON.parse(atob(token.split(".")[1]))
+        setUsername(payload.username)
+    }
+}, [])
 
   return (
     <>
@@ -406,12 +417,9 @@ export default function PatientDashboard() {
 
           {/* Patient card */}
           <div className="pd-patient-card">
-            <div className="pd-avatar">RK</div>
-            <div className="pd-patient-info">
-              <strong>Rahul Kumar</strong>
-              <span>PID: MH-204821</span>
-              <div className="pd-patient-badge">VERIFIED</div>
-            </div>
+            <div className="pd-avatar">{username.slice(0,2).toUpperCase()}</div>
+            <strong>{username}</strong>
+            <span>Patient</span>
           </div>
 
           {/* Nav */}
@@ -448,7 +456,7 @@ export default function PatientDashboard() {
               </button>
               <div className="pd-topbar-left">
                 <h2>{navItems.find(n => n.id === activeTab)?.label}</h2>
-                <p>Wednesday, April 8, 2026 &nbsp;·&nbsp; Hello there, Rahul</p>
+                <p>Wednesday, April 8, 2026 &nbsp;·&nbsp; Hello there, {username}</p>
               </div>
             </div>
             <div className="pd-topbar-right">
