@@ -413,7 +413,7 @@ export default function Landing() {
       <nav className={`nav ${scrolled ? "scrolled" : ""}`}>
         <a className="nav-logo" onClick={() => scrollTo("hero")}>
           <div className="nav-logo-icon">🏥</div>
-          <span className="nav-logo-text">Medi<span>Care</span></span>
+          <span className="nav-logo-text">Med<span>Care</span></span>
         </a>
         <ul className="nav-links">
           {[["About Us","about"],["Our Doctors","doctors"],["Specialities","specialities"],["Health Blogs","blogs"],["Contact","contact"]].map(([label,id]) => (
