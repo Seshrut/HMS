@@ -5,15 +5,15 @@ const pool = new Pool({
   user: "postgres",
   host: "localhost",
   database: "hms",
-  password: "Ananya@2007",
+  password: "postgres123",
   port: 5432,
 });
 
 pool.connect((err, client, release) => {
   if (err) {
-    console.error('Database connection error:', err.message);
+    console.error("Database connection error:", err.message);
   } else {
-    console.log('Database connected successfully!');
+    console.log("Database connected successfully!");
     release();
   }
 });

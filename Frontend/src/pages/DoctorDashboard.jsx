@@ -1,217 +1,139 @@
-import Sidebar from "../components/Sidebar";
 import { useState, useEffect } from "react";
-import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
+import DashboardLayout from "../components/DashboardLayout";
 
 export default function DoctorDashboard() {
   const navigate = useNavigate();
+  const [username,   setUsername]   = useState("Doctor");
+  const [stats,      setStats]      = useState({ todayAppointments: "--", patients: "--", prescriptions: "--", pendingReports: "--" });
+  const [todayAppts, setTodayAppts] = useState([]);
 
-  // values shown in cards
-  const [todayAppointments, setTodayAppointments] = useState("--");
-  const [patients, setPatients] = useState("--");
-  const [prescriptions, setPrescriptions] = useState("--");
-  const [pendingReports, setPendingReports] = useState("--");
-
-  // logged-in doctor name
-  const [username, setUsername] = useState("");
-
-  // runs when page loads
   useEffect(() => {
     const token = Cookies.get("token");
+    if (!token) return;
 
-    // if user not logged in
-    if (!token) {
-      navigate("/loginselector");
-      return;
-    }
+    // Decode username from JWT — no extra request
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      setUsername(payload.username);
+    } catch {}
 
-    // check user + load dashboard data
-    validateUser(token);
-    getStats(token);
+    const headers = { Authorization: `Bearer ${token}` };
+
+    // Real stats
+    fetch("http://localhost:3000/api/dashboard/doctor", { headers })
+      .then((r) => r.json())
+      .then((d) => { if (d && !d.error) setStats(d); })
+      .catch(() => {});
+
+    // Today's appointments
+    fetch("http://localhost:3000/api/appointments/doctor", { headers })
+      .then((r) => r.json())
+      .then((rows) => {
+        if (!Array.isArray(rows)) return;
+        const today = new Date().toISOString().split("T")[0];
+        setTodayAppts(rows.filter((a) => a.appointment_date?.startsWith(today)));
+      })
+      .catch(() => {});
   }, []);
 
-  // verify doctor
-  function validateUser(token) {
-    fetch("http://localhost:3000/api/whoami", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((res) => {
-        if (res.role !== "doctor") {
-          navigate("/loginselector");
-        } else {
-          setUsername(res.username);
-        }
-      })
-      .catch(() => navigate("/loginselector"));
-  }
-
-  // get stats from backend
-  function getStats(token) {
-    fetch("http://localhost:3000/api/dashboard/doctor", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((res) => {
-        setTodayAppointments(res.todayAppointments);
-        setPatients(res.patients);
-        setPrescriptions(res.prescriptions);
-        setPendingReports(res.pendingReports);
-      })
-      .catch(() => console.log("error loading stats"));
-  }
-
-  // date shown on top
-  const today = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
+  const today = new Date().toLocaleDateString("en-IN", {
+    weekday: "long", year: "numeric", month: "long", day: "numeric",
   });
 
-  // temporary appointment list
-  const appointments = [
-    { name: "Rahul Sharma", time: "10:00 AM — General Checkup", status: "pending" },
-    { name: "Sneha Kapoor", time: "11:30 AM — Consultation", status: "completed" },
-    { name: "Amit Verma", time: "1:00 PM — Dental", status: "pending" },
+  const statCards = [
+    { label: "Today's Appointments", val: stats.todayAppointments, color: "blue"   },
+    { label: "Total Patients",        val: stats.patients,          color: "green"  },
+    { label: "Prescriptions Written", val: stats.prescriptions,     color: "purple" },
+    { label: "Pending Appointments",  val: stats.pendingReports,    color: "yellow" },
   ];
 
   return (
-    <div className="pd-layout">
+    <DashboardLayout>
+      {/* Top bar */}
+      <div className="dashboard-topbar">
+        <div>
+          <p className="dashboard-greeting">Welcome back, Dr. {username}</p>
+          <h1 className="dashboard-title">Dashboard</h1>
+        </div>
+        <div className="dashboard-date">{today}</div>
+      </div>
 
-      {/* sidebar */}
-      <Sidebar />
-
-      <div className="pd-main">
-
-        {/* topbar */}
-        <div className="pd-topbar">
-          <div className="pd-topbar-left">
-            <h2>Overview</h2>
-            <p>{today} · Hello Dr. {username}</p>
+      {/* Stat cards */}
+      <div className="stats-grid">
+        {statCards.map((s) => (
+          <div key={s.label} className={`stat-card ${s.color}`}>
+            <div className="stat-card-value">{s.val}</div>
+            <div className="stat-card-label">{s.label}</div>
           </div>
+        ))}
+      </div>
+
+      {/* Lower section */}
+      <div className="dashboard-lower">
+        {/* Today's appointments list */}
+        <div className="dashboard-section-card">
+          <h3 className="section-card-title">Today's Appointments</h3>
+
+          {todayAppts.length === 0 ? (
+            <p style={{ color: "#9ca3af", textAlign: "center", padding: "24px 0" }}>
+              No appointments scheduled for today.
+            </p>
+          ) : (
+            todayAppts.map((appt) => (
+              <div key={appt.id} className="appointment-item">
+                <div className="appt-avatar" style={{ width: 36, height: 36, borderRadius: "50%", background: "#e0e7ff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "#3730a3", flexShrink: 0 }}>
+                  {(appt.patient_name || "?").slice(0, 2).toUpperCase()}
+                </div>
+                <div className="appt-info">
+                  <div className="appt-name">{appt.patient_name}</div>
+                  <div className="appt-time">
+                    {new Date(appt.appointment_date).toLocaleDateString("en-IN", {
+                      day: "2-digit", month: "short", year: "numeric",
+                    })}
+                  </div>
+                </div>
+                <span
+                  className="appt-badge"
+                  style={{
+                    background:
+                      appt.status === "pending"   ? "#fef3c7" :
+                      appt.status === "approved"  ? "#dbeafe" :
+                      appt.status === "completed" ? "#d1fae5" : "#fee2e2",
+                    color:
+                      appt.status === "pending"   ? "#92400e" :
+                      appt.status === "approved"  ? "#1e40af" :
+                      appt.status === "completed" ? "#065f46" : "#b91c1c",
+                  }}
+                >
+                  {appt.status}
+                </span>
+              </div>
+            ))
+          )}
         </div>
 
-        <div className="pd-content">
-
-          {/* stats cards */}
-          <div className="pd-stats-grid">
-
-            <div className="pd-stat-card">
-              <div className="pd-stat-icon" style={{ background: "#e0f2fe" }}></div>
-              <div>
-                <div className="pd-stat-val">{todayAppointments}</div>
-                <div className="pd-stat-lbl">Today's Appointments</div>
-              </div>
-            </div>
-
-            <div className="pd-stat-card">
-              <div className="pd-stat-icon" style={{ background: "#dcfce7" }}></div>
-              <div>
-                <div className="pd-stat-val">{patients}</div>
-                <div className="pd-stat-lbl">Total Patients</div>
-              </div>
-            </div>
-
-            <div className="pd-stat-card">
-              <div className="pd-stat-icon" style={{ background: "#f3e8ff" }}></div>
-              <div>
-                <div className="pd-stat-val">{prescriptions}</div>
-                <div className="pd-stat-lbl">Prescriptions</div>
-              </div>
-            </div>
-
-            <div className="pd-stat-card">
-              <div className="pd-stat-icon" style={{ background: "#fef9c3" }}></div>
-              <div>
-                <div className="pd-stat-val">{pendingReports}</div>
-                <div className="pd-stat-lbl">Reports Pending</div>
-              </div>
-            </div>
-
+        {/* Quick actions */}
+        <div className="dashboard-section-card">
+          <h3 className="section-card-title">Quick Actions</h3>
+          <div className="quick-action-grid">
+            {[
+              { label: "View Appointments", path: "/doctor-appointments" },
+              { label: "My Patients",       path: "/doctor-patients"     },
+              { label: "Patient Reports",   path: "/doctor-reports"      },
+            ].map((btn) => (
+              <button
+                key={btn.path}
+                className="quick-action-btn"
+                onClick={() => navigate(btn.path)}
+              >
+                <div className="qa-label">{btn.label}</div>
+              </button>
+            ))}
           </div>
-
-          {/* main section */}
-          <div className="pd-two-col">
-
-            {/* left side - appointments */}
-            <div>
-              <div className="pd-section-header">
-                <h3>Today's Appointments</h3>
-              </div>
-
-              <div className="pd-appt-list">
-                {appointments.map((appt, index) => (
-                  <div key={index} className="pd-appt-card">
-
-                    {/* initials circle */}
-                    <div className="pd-doc-avatar">
-                      {appt.name.split(" ").map(n => n[0]).join("")}
-                    </div>
-
-                    {/* name + time */}
-                    <div className="pd-appt-info">
-                      <strong>{appt.name}</strong>
-                      <span>{appt.time}</span>
-                    </div>
-
-                    {/* status */}
-                    <div className="pd-appt-time">
-                      <span className={`pd-badge ${appt.status}`}>
-                        {appt.status}
-                      </span>
-                    </div>
-
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* right side - quick actions */}
-            <div className="pd-vitals-card">
-              <h3>Quick Actions</h3>
-
-              <div className="quick-action-grid">
-
-                <button
-                  className="quick-action-btn"
-                  onClick={() => navigate("/doctor-appointments")}
-                >
-                  <div className="qa-label">View Appointments</div>
-                </button>
-
-                <button
-                  className="quick-action-btn"
-                  onClick={() => navigate("/doctor-patients")}
-                >
-                  <div className="qa-label">My Patients</div>
-                </button>
-
-                <button
-                  className="quick-action-btn"
-                  onClick={() => navigate("/write-prescription")}
-                >
-                  <div className="qa-label">Add Prescription</div>
-                </button>
-
-                <button
-                  className="quick-action-btn"
-                  onClick={() => navigate("/doctor-reports")}
-                >
-                  <div className="qa-label">View Reports</div>
-                </button>
-
-              </div>
-            </div>
-
-          </div>
-
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

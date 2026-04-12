@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import Cookies from "js-cookie";
 
 // ─── SVG Icons ───────────────────────────────────────────────────────────────
 const Icon = {
@@ -68,19 +69,45 @@ const navItems = [
 // ─── Component ───────────────────────────────────────────────────────────────
 export default function PatientDashboard() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab,   setActiveTab]   = useState("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  
-const [username, setUsername] = useState("Patient")
+  const [username,    setUsername]    = useState("Patient");
+  const [userId,      setUserId]      = useState("");
+  const [realAppointments,  setRealAppointments]  = useState([]);
+  const [realPrescriptions, setRealPrescriptions] = useState([]);
+  const [dashStats,         setDashStats]         = useState(null);
 
-useEffect(() => {
-    const token = localStorage.getItem("token")
-    if (token) {
-        // JWT has 3 parts separated by dots, the middle part is the data
-        const payload = JSON.parse(atob(token.split(".")[1]))
-        setUsername(payload.username)
-    }
-}, [])
+  useEffect(() => {
+    const token = Cookies.get("token");
+    if (!token) { navigate("/loginselector"); return; }
+
+    // Decode username from JWT (no extra request)
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      setUsername(payload.username);
+      setUserId(payload.userId || "");
+    } catch {}
+
+    const headers = { Authorization: `Bearer ${token}` };
+
+    // Appointments
+    fetch("http://localhost:3000/api/appointments/patient", { headers })
+      .then((r) => r.json())
+      .then((rows) => { if (Array.isArray(rows)) setRealAppointments(rows); })
+      .catch(() => {});
+
+    // Prescriptions
+    fetch("http://localhost:3000/api/prescriptions/patient", { headers })
+      .then((r) => r.json())
+      .then((rows) => { if (Array.isArray(rows)) setRealPrescriptions(rows); })
+      .catch(() => {});
+
+    // Dashboard stats
+    fetch("http://localhost:3000/api/dashboard/patient", { headers })
+      .then((r) => r.json())
+      .then((d) => setDashStats(d))
+      .catch(() => {});
+  }, [])
 
   return (
     <>
@@ -439,7 +466,10 @@ useEffect(() => {
 
           {/* Logout */}
           <div className="pd-sidebar-footer">
-            <div className="pd-logout" onClick={() => navigate("/")}>
+            <div className="pd-logout" onClick={() => {
+              Cookies.remove("token");
+              navigate("/");
+            }}>
               {Icon.logout}
               Sign Out
             </div>
@@ -480,10 +510,10 @@ useEffect(() => {
                 {/* Stats */}
                 <div className="pd-stats-grid">
                   {[
-                    { label: "Total Appointments",  val: "12", icon: Icon.calendar, bg: "#e0f2fe", ic: "#0284c7" },
-                    { label: "Upcoming",             val: "2",  icon: Icon.clock,    bg: "#dcfce7", ic: "#16a34a" },
-                    { label: "Medical Records",      val: "4",  icon: Icon.records,  bg: "#ccfbf1", ic: "#0d9488" },
-                    { label: "Active Prescriptions", val: "3",  icon: Icon.pill,     bg: "#fef9c3", ic: "#ca8a04" },
+                    { label: "Total Appointments",  val: dashStats ? dashStats.totalAppointments : "--", icon: Icon.calendar, bg: "#e0f2fe", ic: "#0284c7" },
+                    { label: "Upcoming",             val: dashStats ? dashStats.upcoming          : "--", icon: Icon.clock,    bg: "#dcfce7", ic: "#16a34a" },
+                    { label: "Medical Records",      val: "4",                                            icon: Icon.records,  bg: "#ccfbf1", ic: "#0d9488" },
+                    { label: "Active Prescriptions", val: realPrescriptions.length || "--",               icon: Icon.pill,     bg: "#fef9c3", ic: "#ca8a04" },
                   ].map((s, i) => (
                     <div className="pd-stat-card" key={i}>
                       <div className="pd-stat-icon" style={{ background: s.bg, color: s.ic }}>
@@ -506,20 +536,20 @@ useEffect(() => {
                       <button className="pd-view-all" onClick={() => setActiveTab("appointments")}>View all {Icon.arrow}</button>
                     </div>
                     <div className="pd-appt-list">
-                      {appointments.filter(a => a.status === "upcoming").map(appt => (
+                      {realAppointments.filter(a => a.status === "pending" || a.status === "approved").slice(0,3).map(appt => (
                         <div className="pd-appt-card" key={appt.id}>
-                          <div className="pd-doc-avatar">{appt.avatar}</div>
+                          <div className="pd-doc-avatar">{(appt.doctor_name||"?").slice(0,2).toUpperCase()}</div>
                           <div className="pd-appt-info">
-                            <strong>{appt.doctor}</strong>
-                            <span>{appt.specialty}</span>
+                            <strong>{appt.doctor_name}</strong>
+                            <span>{appt.specialization || "General"}</span>
                           </div>
                           <div className="pd-appt-time">
-                            <span className="date">{appt.date}</span>
-                            <span className="time">{appt.time}</span>
+                            <span className="date">{new Date(appt.appointment_date).toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"})}</span>
                           </div>
-                          <span className={`pd-badge ${appt.status}`}>{appt.status}</span>
+                          <span className="pd-badge upcoming">{appt.status}</span>
                         </div>
                       ))}
+                      {realAppointments.filter(a=>a.status==="pending"||a.status==="approved").length===0 && <p style={{color:"#9ca3af",padding:"16px",textAlign:"center"}}>No upcoming appointments.</p>}
                     </div>
                   </div>
 
@@ -615,45 +645,39 @@ useEffect(() => {
                 {/* Upcoming */}
                 <p style={{ fontSize: ".8rem", fontWeight: 600, color: "var(--gray)", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 12 }}>Upcoming</p>
                 <div className="pd-appt-list" style={{ marginBottom: 28 }}>
-                  {appointments.filter(a => a.status === "upcoming").map(appt => (
+                  {realAppointments.filter(a => a.status==="pending"||a.status==="approved").map(appt => (
                     <div className="pd-appt-card" key={appt.id} style={{ boxShadow: "0 3px 18px rgba(13,148,136,.1)" }}>
-                      <div className="pd-doc-avatar">{appt.avatar}</div>
+                      <div className="pd-doc-avatar">{(appt.doctor_name||"?").slice(0,2).toUpperCase()}</div>
                       <div className="pd-appt-info">
-                        <strong>{appt.doctor}</strong>
-                        <span>{appt.specialty}</span>
+                        <strong>{appt.doctor_name}</strong>
+                        <span>{appt.specialization || "General"}</span>
                       </div>
                       <div className="pd-appt-time">
-                        <span className="date">{appt.date}</span>
-                        <span className="time">{appt.time}</span>
+                        <span className="date">{new Date(appt.appointment_date).toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"})}</span>
                       </div>
-                      <span className={`pd-badge ${appt.status}`}>{appt.status}</span>
-                      <button style={{ marginLeft: 8, padding: "7px 16px", borderRadius: 50, fontSize: ".75rem", fontWeight: 600, background: "#fee2e2", color: "#dc2626", border: "none", cursor: "pointer" }}>Cancel</button>
+                      <span className="pd-badge upcoming">{appt.status}</span>
                     </div>
                   ))}
+                  {realAppointments.filter(a=>a.status==="pending"||a.status==="approved").length===0 && <p style={{color:"#9ca3af",padding:"16px",textAlign:"center"}}>No upcoming appointments.</p>}
                 </div>
 
                 {/* Past */}
                 <p style={{ fontSize: ".8rem", fontWeight: 600, color: "var(--gray)", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 12 }}>Past</p>
                 <div className="pd-appt-list">
-                  {appointments.filter(a => a.status !== "upcoming").map(appt => (
+                  {realAppointments.filter(a => a.status==="completed"||a.status==="cancelled").map(appt => (
                     <div className="pd-appt-card" key={appt.id} style={{ opacity: .85 }}>
-                      <div className="pd-doc-avatar">{appt.avatar}</div>
+                      <div className="pd-doc-avatar">{(appt.doctor_name||"?").slice(0,2).toUpperCase()}</div>
                       <div className="pd-appt-info">
-                        <strong>{appt.doctor}</strong>
-                        <span>{appt.specialty}</span>
+                        <strong>{appt.doctor_name}</strong>
+                        <span>{appt.specialization || "General"}</span>
                       </div>
                       <div className="pd-appt-time">
-                        <span className="date">{appt.date}</span>
-                        <span className="time">{appt.time}</span>
+                        <span className="date">{new Date(appt.appointment_date).toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"})}</span>
                       </div>
-                      <span className={`pd-badge ${appt.status}`}>{appt.status}</span>
-                      {appt.status === "completed" && (
-                        <div style={{ display: "flex", gap: 2, marginLeft: 4 }}>
-                          {[1,2,3,4,5].map(s => <span key={s} style={{ color: s <= 4 ? "#f59e0b" : "#cbd5e1", fontSize: "11px" }}>★</span>)}
-                        </div>
-                      )}
+                      <span className={`pd-badge ${appt.status==="completed" ? "completed" : "cancelled"}`}>{appt.status}</span>
                     </div>
                   ))}
+                  {realAppointments.filter(a=>a.status==="completed"||a.status==="cancelled").length===0 && <p style={{color:"#9ca3af",padding:"16px",textAlign:"center"}}>No past appointments.</p>}
                 </div>
               </>
             )}
@@ -701,38 +725,59 @@ useEffect(() => {
               <>
                 <div className="pd-section-header">
                   <h3>My Prescriptions</h3>
-                  <span style={{ fontSize: ".82rem", color: "var(--gray)" }}>3 active · 1 expired</span>
+                  <span style={{ fontSize: ".82rem", color: "var(--gray)" }}>
+                    {realPrescriptions.length} prescription(s)
+                  </span>
                 </div>
-                <div className="pd-rx-grid">
-                  {prescriptions.map(rx => (
-                    <div className={`pd-rx-card ${rx.status}`} key={rx.id}>
-                      <div className="pd-rx-header">
-                        <div>
-                          <div className="pd-rx-name">{rx.medicine}</div>
-                          <div className="pd-rx-dosage">{rx.dosage}</div>
+                {realPrescriptions.length === 0 ? (
+                  <div className="pd-empty">
+                    <div className="emoji">💊</div>
+                    <p>No prescriptions written yet.</p>
+                  </div>
+                ) : (
+                  <div className="pd-rx-grid">
+                    {realPrescriptions.map(rx => {
+                      let meds = [];
+                      try { meds = JSON.parse(rx.medicines || "[]"); } catch {}
+                      const firstMed = meds[0];
+                      return (
+                        <div className="pd-rx-card active" key={rx.id}>
+                          <div className="pd-rx-header">
+                            <div>
+                              <div className="pd-rx-name">{rx.diagnosis}</div>
+                              <div className="pd-rx-dosage">
+                                {firstMed ? `${firstMed.name} — ${firstMed.instructions}` : "See details"}
+                              </div>
+                            </div>
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
+                              <span className="pd-badge active">active</span>
+                              <div className="pd-pill-icon">{Icon.pill}</div>
+                            </div>
+                          </div>
+                          <div className="pd-rx-meta">
+                            <div className="pd-rx-meta-item">
+                              <label>Prescribed by</label>
+                              <span>{rx.doctor_name}</span>
+                            </div>
+                            <div className="pd-rx-meta-item">
+                              <label>Date</label>
+                              <span>{new Date(rx.appointment_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
+                            </div>
+                            <div className="pd-rx-meta-item">
+                              <label>Medicines</label>
+                              <span>{meds.length}</span>
+                            </div>
+                          </div>
+                          {rx.advice && (
+                            <p style={{ fontSize: ".76rem", color: "var(--gray)", marginTop: "10px", paddingTop: "10px", borderTop: "1px solid var(--light)" }}>
+                              <strong>Advice:</strong> {rx.advice}
+                            </p>
+                          )}
                         </div>
-                        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
-                          <span className={`pd-badge ${rx.status}`}>{rx.status}</span>
-                          <div className="pd-pill-icon">{Icon.pill}</div>
-                        </div>
-                      </div>
-                      <div className="pd-rx-meta">
-                        <div className="pd-rx-meta-item">
-                          <label>Prescribed by</label>
-                          <span>{rx.doctor}</span>
-                        </div>
-                        <div className="pd-rx-meta-item">
-                          <label>Date</label>
-                          <span>{rx.date}</span>
-                        </div>
-                        <div className="pd-rx-meta-item">
-                          <label>Refills Left</label>
-                          <span>{rx.refills}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
               </>
             )}
 
@@ -741,19 +786,21 @@ useEffect(() => {
               <div className="pd-profile-layout">
                 {/* Left */}
                 <div className="pd-profile-card">
-                  <div className="pd-profile-avatar">RK</div>
-                  <h3 className="pd-profile-name">Rahul Kumar</h3>
-                  <p className="pd-profile-id">Patient ID: MH-204821</p>
+                  <div className="pd-profile-avatar">
+                    {username.slice(0, 2).toUpperCase()}
+                  </div>
+                  <h3 className="pd-profile-name">{username}</h3>
+                  <p className="pd-profile-id">Patient ID: HMS-{String(userId).padStart(4, "0")}</p>
                   <div style={{ display: "flex", justifyContent: "center", gap: 4, margin: "12px 0" }}>
                     {[1,2,3,4,5].map(s => <span key={s} style={{ color: "#f59e0b", fontSize: 14 }}>★</span>)}
                   </div>
                   <p style={{ fontSize: ".78rem", color: "var(--gray)", lineHeight: 1.6 }}>
-                    Member since January 2024. Verified patient with complete health records.
+                    Verified patient with complete health records.
                   </p>
                   <div className="pd-profile-stats">
-                    <div className="pd-profile-stat"><strong>12</strong><span>Visits</span></div>
+                    <div className="pd-profile-stat"><strong>{dashStats ? dashStats.totalAppointments : "--"}</strong><span>Visits</span></div>
                     <div className="pd-profile-stat"><strong>4</strong><span>Records</span></div>
-                    <div className="pd-profile-stat"><strong>3</strong><span>Rx</span></div>
+                    <div className="pd-profile-stat"><strong>{realPrescriptions.length}</strong><span>Rx</span></div>
                   </div>
                   <button className="pd-edit-btn" style={{ marginTop: 20, width: "100%", justifyContent: "center" }}>
                     {Icon.edit} Edit Photo
@@ -768,13 +815,13 @@ useEffect(() => {
                   </div>
                   <div className="pd-info-grid">
                     {[
-                      ["Full Name", "Rahul Kumar"],
-                      ["Date of Birth", "August 14, 1990"],
-                      ["Gender", "Male"],
-                      ["Blood Group", "B+"],
-                      ["Phone", "+91 98765 43210"],
-                      ["Email", "rahul.kumar@gmail.com"],
-                      ["Address", "Sector 22, Noida, UP"],
+                      ["Full Name",         username],
+                      ["Date of Birth",     "August 14, 1990"],
+                      ["Gender",            "Male"],
+                      ["Blood Group",       "B+"],
+                      ["Phone",             "+91 98765 43210"],
+                      ["Email",             `${username.toLowerCase()}@gmail.com`],
+                      ["Address",           "Sector 22, Noida, UP"],
                       ["Emergency Contact", "+91 98765 00001"],
                     ].map(([label, val]) => (
                       <div className="pd-info-field" key={label}>
